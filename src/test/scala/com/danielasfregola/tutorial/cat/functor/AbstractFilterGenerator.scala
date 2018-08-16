@@ -5,21 +5,20 @@ import org.scalacheck.Gen
 
 object AbstractFilterGenerator {
 
-  def genPredicate = for {
+  def genPredicate(subject: String) = for {
     predicate <- Gen.oneOf(List("equals", "notequals", "contains", "notcontains", "endswith", "notendswith", "beginswith", "notbeginswith"))
     argument <- Gen.alphaStr
-  } yield Predicate(predicate = (predicate, argument))
+  } yield Predicate(predicate = (subject, predicate, argument))
 
-  def genPredicateDysjunction = for {
-    predicateDysjunction <- Gen.listOf(genPredicate)
+  def genPredicateDysjunction(subject: String) = for {
+    predicateDysjunction <- Gen.listOf(genPredicate(subject))
   } yield PredicateDisjunction(predicates = predicateDysjunction)
 
   val nonAttr = List("read", "sources", "id", "objecttypes")
   def genFilter = for {
     attributes <- Gen.nonEmptyListOf(Gen.alphaStr).map(attrs => attrs.map(attr => s"event.attributes.$attr"))
     subjects <- Gen.listOf(Gen.oneOf(nonAttr ++ attributes))
-    defaultPredicate <- genPredicateDysjunction
-  } yield subjects.foldLeft(Map.empty[String, PredicateDisjunction[(String, String)]])((accum, subject) => {
-    accum + (subject -> genPredicateDysjunction.sample.getOrElse(defaultPredicate))
+  } yield subjects.foldLeft(Map.empty[String, PredicateDisjunction[(String, String, String)]])((accum, subject) => {
+    accum + (subject -> genPredicateDysjunction(subject).sample.get)
   })
 }

@@ -8,12 +8,12 @@ import FunctorInstances.filterFunctor
 
 class AbstractFilterFunctorTest extends Properties("AbstractFilter Functor Laws test") {
 
-  val f: Tuple2[String, String] => Boolean = pred => pred._1 == pred._2
+  val f: Tuple3[String, String, String] => Boolean = pred => pred._2 == pred._3
   val g: Boolean => String = pred => pred.toString
   val h: String => Int = _.length
   val fG = f andThen g
-  val mapFG: AbstractFilter[(String, String)] => AbstractFilter[String] = filterFunctor.map(_)(fG)
-  val mapF: AbstractFilter[(String, String)] => AbstractFilter[Boolean] = filterFunctor.map(_)(f)
+  val mapFG: AbstractFilter[(String, String, String)] => AbstractFilter[String] = filterFunctor.map(_)(fG)
+  val mapF: AbstractFilter[(String, String, String)] => AbstractFilter[Boolean] = filterFunctor.map(_)(f)
   val mapG: AbstractFilter[Boolean] => AbstractFilter[String] = filterFunctor.map(_)(g)
 
   property("identity") = forAll(AbstractFilterGenerator.genFilter) { predicateConjunctions =>
