@@ -1,6 +1,7 @@
 package com.danielasfregola.tutorial.cat.functor
 
-import com.danielasfregola.tutorial.cat._
+import com.danielasfregola.tutorial.cat.{Predicate, PredicateDisjunction, AbstractFilter, Filter}
+import com.danielasfregola.tutorial.cat.{Just, Empty, Maybe, Zero, ZeroOrMore, OneOrMore}
 
 object FunctorInstances {
 
@@ -18,4 +19,25 @@ object FunctorInstances {
     }
   }
 
+  val filterFunctor: Functor[AbstractFilter] = new Functor[AbstractFilter] {
+    override def map[A, B](boxA: AbstractFilter[A])(f: (A) => B): AbstractFilter[B] = boxA match {
+      case Predicate(p) => Predicate(f(p))
+      case PredicateDisjunction(predicates) => {
+        val result = predicates.map(predicate => map(predicate)(f))
+        PredicateDisjunction(result)
+      }
+      case Filter(conjunctions) => {
+        val result = conjunctions.map(subjectFilter => subjectFilter._1 -> map(subjectFilter._2)(f))
+        Filter(result)
+      }
+    }
+  }
 }
+
+
+
+//case class Predicate[A](predicate: String, argument: String) extends AbstractFilter[A]
+
+//case class PredicateDisjunction[A](predicates: List[A]) extends AbstractFilter[A]
+
+//case class Filter[A](predicateConjunctions: Map[String, A]) extends AbstractFilter[A]
